@@ -6,6 +6,8 @@ import java.io.StringWriter;
 
 public class Tools {
 
+	private Tools() {}
+	
 	public static String writeException(Exception e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
