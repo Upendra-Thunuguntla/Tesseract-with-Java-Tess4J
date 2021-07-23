@@ -1,0 +1,40 @@
+package upendra.tess4j.constants;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sourceforge.tess4j.ITesseract.RenderedFormat;
+import upendra.tess4j.utils.Config;
+
+public class Constants {
+
+	private Constants() {}
+
+	public static final String 
+	PROCESSING_FOLDER = Config.getString("Input"),
+	INPUT 			= PROCESSING_FOLDER + File.pathSeparator + "Input",
+	OUTPUT			= PROCESSING_FOLDER + File.pathSeparator + "Output",
+	CONVERTED 		= PROCESSING_FOLDER + File.pathSeparator + "Converted",
+	TMP 			= PROCESSING_FOLDER + File.pathSeparator + "tmp",
+	SEP				= File.pathSeparator;
+
+	
+	public static final Integer 
+	THREAD_COUNT_1 = Integer.parseInt(Config.getString("ThreadCount1")),
+	THREAD_COUNT_2 = Integer.parseInt(Config.getString("ThreadCount2"));
+
+
+	public static final Boolean
+	isAdvancedProcessingEnabled = "Y".equals(Config.getString("AdvancedProcessing")),
+	isDeskewEnabled = "Y".equals(Config.getString("Deskew")),
+	isWatchFolderEnabled = "Y".equals(Config.getString("WatchFolder"));
+
+	
+	public static final List<RenderedFormat> outputFormat = new ArrayList<RenderedFormat>() {
+		private static final long serialVersionUID = -4389040553456467156L;
+		{add(RenderedFormat.PDF);}
+	};
+
+	
+}
