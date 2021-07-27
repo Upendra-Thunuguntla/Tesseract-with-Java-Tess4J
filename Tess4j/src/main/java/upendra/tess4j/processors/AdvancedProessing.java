@@ -26,16 +26,23 @@ public class AdvancedProessing implements Runnable{
 	File splitTIFLocation;
 	File splitPDFLocation;
 
-
-
-	//For Monitoring
+	//For Monitoring Purpose
 	Boolean wait;
+
+	public AdvancedProessing(File inputFile, String outputPath, Boolean wait) {
+		this.inputTifFile = inputFile;
+		this.outputPDFPath = outputPath;
+		this.filename_without_extention = Tools.getFileName(inputFile);
+		this.wait=wait;
+	}
 
 	@Override
 	public void run() {
-
+		if (wait)
+			Tools.wait(1000 * 60 * 1);
+		
+		processTIFFile();
 	}
-
 
 	public void processTIFFile() {
 
@@ -69,6 +76,7 @@ public class AdvancedProessing implements Runnable{
 
 			ex.shutdown();
 			while(!ex.isTerminated()) {}
+
 
 		}catch (Exception e ) {
 			logError(e);
