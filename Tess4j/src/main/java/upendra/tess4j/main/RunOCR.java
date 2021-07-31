@@ -23,25 +23,20 @@ public class RunOCR {
 		Instant start = Instant.now();
 		Conversion.setupFolderStrucure();
 		Conversion.createMultipleTessDataFolders();
-		
-		
+
+		//Choose Processing method based on Flags from 
 		if (Constants.isAdvancedProcessingEnabled.booleanValue()) {
 			Advanced advanced = new Advanced();
-			if (Constants.isWatchFolderEnabled.booleanValue()) {
-				advanced.watchAndConvert();
-			}else {
-				advanced.convert();
-			}
+			advanced.convert();
+			Instant stop = Instant.now();
+			log.info("Completed in : " + Duration.between(start, stop));
+
 		}else {
 			Direct direct = new Direct();
-			if (Constants.isWatchFolderEnabled.booleanValue()) {
-				direct.watchAndConvert();
-			}else {
-				direct.convert();
-			}
+			direct.convert();
+			Instant stop = Instant.now();
+			log.info("Completed in : " + Duration.between(start, stop));
 		}
-
-		Instant stop = Instant.now();
-		log.info("Completed in : " + Duration.between(start, stop));
 	}
 }
+

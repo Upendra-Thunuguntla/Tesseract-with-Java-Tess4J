@@ -12,6 +12,7 @@ buildNumber.properties
 Tess4j/Processing Folder/TessData
 Tess4j/Processing Folder/Input
 Tess4j/Processing Folder/Output
+Tess4j/Processing Folder/tmp
 Tess4j/Processing Folder/Converted
 
 *.log

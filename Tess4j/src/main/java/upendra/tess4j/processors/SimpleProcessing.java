@@ -5,15 +5,19 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
-import upendra.tess4j.constants.Constants;
-import upendra.tess4j.utils.Log;
+import upendra.tess4j.utils.Constants;
 import upendra.tess4j.utils.Tools;
 
 public class SimpleProcessing implements Runnable{
+
+
+	static final Logger log = Logger.getLogger(SimpleProcessing.class);
 
 	File inputFile;
 	String output;
@@ -22,7 +26,7 @@ public class SimpleProcessing implements Runnable{
 
 	//For Monitoring Purpose
 	Boolean wait=false;
-
+	Boolean splitrun = false;
 
 	public SimpleProcessing(Tesseract tess, File inputFile, String output, Boolean wait) {
 		this.inputFile = inputFile;
@@ -37,20 +41,23 @@ public class SimpleProcessing implements Runnable{
 		this.output = output;
 		this.fileName = Tools.getFileName(inputFile);
 		this.tess = tess;
+		this.splitrun = true;
 	}
 
 
 	@Override
 	public void run() {
-		if (wait) {
-			Tools.wait(1000 * 60 * 5);
+		if (wait.booleanValue()) 
+			Tools.wait(Constants.WAIT_TIME);
+
+		if (splitrun.booleanValue()) {
+			runSplitConversion();
+		}else {
 			Instant start = Instant.now();
 			runConversion();
 			Instant stop = Instant.now();
 			logInfo("Completed in : " + Duration.between(start, stop));
 
-		}else {
-			runSplitConversion();
 		}
 	}
 
@@ -60,7 +67,12 @@ public class SimpleProcessing implements Runnable{
 			logInfo("Started Converting");
 			tess.createDocuments(inputFile.getAbsolutePath(), output, Constants.outputFormat);
 			logInfo("Finished Converting");
-			FileUtils.moveFileToDirectory(inputFile, new File(Constants.CONVERTED), false);
+			try {
+				FileUtils.moveFileToDirectory(inputFile, new File(Constants.CONVERTED), true);
+			}catch(FileExistsException fe) {
+				inputFile.delete();
+			}
+			logInfo("Finished Moving");
 		}catch (TesseractException | IOException e) {
 			logError(e);
 			//TODO Add to Failed List
@@ -79,11 +91,11 @@ public class SimpleProcessing implements Runnable{
 
 
 	private void logInfo(String message) {
-		Log.info(inputFile.getName()+" : "+message);
+		log.info(inputFile.getName()+" : "+message);
 	}
 
 	private void logError(String message) {
-		Log.error(inputFile.getName()+" : "+message);
+		log.error(inputFile.getName()+" : "+message);
 	}
 
 	private void logError(Exception ex) {

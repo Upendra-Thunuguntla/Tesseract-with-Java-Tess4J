@@ -10,11 +10,16 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import upendra.tess4j.constants.Constants;
-import upendra.tess4j.utils.Log;
+import org.apache.log4j.Logger;
+
+import net.sourceforge.tess4j.Tesseract;
+import upendra.tess4j.utils.Constants;
 import upendra.tess4j.utils.Tools;
 
 public class AdvancedProessing implements Runnable{
+
+
+	static final Logger log = Logger.getLogger(AdvancedProessing.class);
 
 	//For Conversion
 	File inputTifFile;
@@ -38,9 +43,9 @@ public class AdvancedProessing implements Runnable{
 
 	@Override
 	public void run() {
-		if (wait)
-			Tools.wait(1000 * 60 * 1);
-		
+		if (wait.booleanValue())
+			Tools.wait(Constants.WAIT_TIME);
+
 		processTIFFile();
 	}
 
@@ -69,14 +74,15 @@ public class AdvancedProessing implements Runnable{
 			splitTIFLocation.mkdirs();
 
 			ExecutorService ex = Executors.newFixedThreadPool(Constants.THREAD_COUNT_1);
-
+			logInfo("Started Splitting");
 			for (int i=0;i<totalPages;i++) {
-				ex.execute(new SplitAndProcess(filename_without_extention, extention, splitTIFLocation.getAbsolutePath(), i, reader.read(i)));
+				ex.execute(new SplitAndProcess(filename_without_extention, extention, splitTIFLocation.getAbsolutePath(), i, reader.read(i),splitPDFLocation));
 			}
 
 			ex.shutdown();
 			while(!ex.isTerminated()) {}
-
+			logInfo("Splitting Complete");
+			doOCR();
 
 		}catch (Exception e ) {
 			logError(e);
@@ -85,12 +91,34 @@ public class AdvancedProessing implements Runnable{
 	}
 
 
+	private void doOCR() {
+
+		Integer dataset = 0;
+		ExecutorService exe = Executors.newFixedThreadPool(Constants.THREAD_COUNT_1);
+		log.info("Performing OCR Conversion");
+
+		for (File f: splitTIFLocation.listFiles()) {
+
+			String tessDataFolder = Constants.TESS_DATA+Constants.SEP+"tessdata_"+(dataset%Constants.DATA_PATH_COUNT);
+			System.out.println(tessDataFolder);
+			Tesseract tess = new Tesseract();
+			tess.setDatapath(tessDataFolder);
+			tess.setTessVariable("user_defined_dpi", "300");
+			exe.execute(new SimpleProcessing(tess, f, splitPDFLocation.getAbsolutePath()+Constants.SEP+Tools.getFileName(f),0));
+			tess = null;
+			dataset++;
+		}
+
+		exe.shutdown();
+		while(!exe.isTerminated()) {}
+	}
+
 	private void logInfo(String message) {
-		Log.info(inputTifFile.getName()+" : "+message);
+		log.info(inputTifFile.getName()+" : "+message);
 	}
 
 	private void logError(String message) {
-		Log.error(inputTifFile.getName()+" : "+message);
+		log.error(inputTifFile.getName()+" : "+message);
 	}
 
 	private void logError(Exception ex) {

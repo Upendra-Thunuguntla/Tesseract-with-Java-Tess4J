@@ -17,14 +17,14 @@ public class Constants {
 	OUTPUT			= PROCESSING_FOLDER + SEP + "Output",
 	CONVERTED 		= PROCESSING_FOLDER + SEP + "Converted",
 	TMP 			= PROCESSING_FOLDER + SEP + "tmp",
-	TESS_DATA 		= PROCESSING_FOLDER + SEP + "TessData"
-	;
+	TESS_DATA 		= PROCESSING_FOLDER + SEP + "TessData";
 
 	
 	public static final Integer 
 	THREAD_COUNT_1 = Integer.parseInt(Config.getString("ThreadCount1")),
 	THREAD_COUNT_2 = Integer.parseInt(Config.getString("ThreadCount2")),
-	DATA_PATH_COUNT = Integer.parseInt(Config.getString("MultipleDataPathCount"));
+	DATA_PATH_COUNT = Integer.parseInt(Config.getString("MultipleDataPathCount")),
+	WAIT_TIME 		= 1000*60*5;
 
 
 	public static final Boolean
