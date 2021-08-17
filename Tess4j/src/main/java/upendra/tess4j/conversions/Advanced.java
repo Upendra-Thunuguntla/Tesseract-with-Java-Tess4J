@@ -31,7 +31,8 @@ public class Advanced implements Conversion{
 		log.info("Prerforming Advanced Conversion");
 
 		for (File f: input.listFiles()) {
-			exe.execute(new AdvancedProessing(f, Constants.OUTPUT+Constants.SEP+Tools.getFileName(f), false));
+			exe.execute(new AdvancedProessing(f, 
+					Constants.OUTPUT+Constants.SEP+Tools.getFileName(f)+".pdf", false));
 		}
 
 		exe.shutdown();
@@ -52,7 +53,8 @@ public class Advanced implements Conversion{
 		while ((key = watchService.take()) != null) {
 			for (WatchEvent<?> event : key.pollEvents()) {
 				log.info(event.kind()+ " : " + event.context() );
-				exe.execute(new AdvancedProessing(new File(Constants.INPUT+Constants.SEP+event.context()), Constants.OUTPUT+Constants.SEP+Tools.getFileName(event.context().toString()), true));
+				exe.execute(new AdvancedProessing(new File(Constants.INPUT+Constants.SEP+event.context()), 
+						Constants.OUTPUT+Constants.SEP+Tools.getFileName(event.context().toString())+".pdf", true));
 			}
 			key.reset();
 		}
