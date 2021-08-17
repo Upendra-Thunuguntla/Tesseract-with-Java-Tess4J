@@ -2,7 +2,11 @@ package upendra.tess4j.processors;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -10,7 +14,10 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 
 import net.sourceforge.tess4j.Tesseract;
 import upendra.tess4j.utils.Constants;
@@ -81,9 +88,14 @@ public class AdvancedProessing implements Runnable{
 
 			ex.shutdown();
 			while(!ex.isTerminated()) {}
-			logInfo("Splitting Complete");
+			logInfo("Splitting Complete. Performing OCR Now");
 			doOCR();
+			logInfo("OCR Complete, Performing Merge Operation now");
+			//TODO Validate number of tif files and number of pdf files are same in count
+			mergePDF(new File(outputPDFPath));
 
+			
+			FileUtils.moveFileToDirectory(inputTifFile, new File(Constants.CONVERTED), true);
 		}catch (Exception e ) {
 			logError(e);
 			throw new RuntimeException(e.getMessage());
@@ -111,6 +123,40 @@ public class AdvancedProessing implements Runnable{
 
 		exe.shutdown();
 		while(!exe.isTerminated()) {}
+	}
+
+
+	private void deteleTmpFolder(File pdfORtiffFolder) {
+		try {
+			FileUtils.deleteDirectory(pdfORtiffFolder.getParentFile());
+		} catch (IOException e) {
+			logError(e);
+		}
+	}
+
+
+	private void mergePDF(File destination) {
+		try {
+			PDFMergerUtility merger = new PDFMergerUtility();
+			merger.setDestinationFileName(destination.getPath());
+
+			List<File> pdfs = Arrays.asList(splitPDFLocation.listFiles());
+			Collections.sort(pdfs,new Comparator<File>() {
+				//Sorting operation is mandatory as we are using numbers as file names and 
+				@Override
+				public int compare(File o1, File o2) {
+					return Integer.parseInt(Tools.getFileName(o1)) - Integer.parseInt(Tools.getFileName(o2)) ;
+				}});
+
+			for (File pdf:pdfs) {
+				merger.addSource(pdf);
+			}
+			merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+			logInfo("Merge Complete");
+			deteleTmpFolder(splitPDFLocation);
+		}catch (IOException e) {
+			logError(e);
+		}
 	}
 
 	private void logInfo(String message) {
