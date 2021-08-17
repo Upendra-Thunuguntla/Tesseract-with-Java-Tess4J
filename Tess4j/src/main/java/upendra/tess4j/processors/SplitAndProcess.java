@@ -79,7 +79,7 @@ public class SplitAndProcess implements Runnable{
 		if ((imageSkewAngle> MIN_DESKEW_THRESHOLD || imageSkewAngle < -(MIN_DESKEW_THRESHOLD))) {
 			bi = rotateImage(bi, -imageSkewAngle);
 		}
-
+		id = null;imageSkewAngle=null;
 		return bi;
 	}
 
@@ -87,7 +87,12 @@ public class SplitAndProcess implements Runnable{
 		int w = bi.getWidth();
 		int h = bi.getHeight();
 		
-		BufferedImage res = new BufferedImage(w, h, bi.getType());
+		BufferedImage res = 
+				new BufferedImage(
+						w, h, 
+						12);
+		
+		//bi.getType());
 		//TODO Error in getType for one image - check why
 		
 		Graphics2D g = res.createGraphics();
@@ -95,7 +100,7 @@ public class SplitAndProcess implements Runnable{
 		g.fillRect(0, 0, w, h);
 		g.rotate(Math.toRadians(degrees), w/2, h/2);
 		g.drawImage(bi,null,0,0);
-
+		g=null;bi=null;degrees=null;
 		return res;
 	}
 }
